@@ -29,11 +29,16 @@ tf.app.flags.DEFINE_integer('batch_size', 16,
 tf.app.flags.DEFINE_float('weight_init', .1,
                             """weight init for fully connected layers""")
 
-fourcc = cv2.cv.CV_FOURCC('m', 'p', '4', 'v') 
+if cv2.__version__.startswith("2."): 
+  fourcc = cv2.cv.CV_FOURCC(*'mp4v')
+elif cv2.__version__.startswith("3."): 
+  fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+else:
+  raise ValueError("invalid version for opencv")
 
 def generate_bouncing_ball_sample(batch_size, seq_length, shape, num_balls):
   dat = np.zeros((batch_size, seq_length, shape, shape, 3))
-  for i in xrange(batch_size):
+  for i in range(batch_size):
     dat[i, :, :, :, :] = b.bounce_vec(32, num_balls, seq_length)
   return dat 
 
@@ -85,7 +90,7 @@ def train():
 
     # conv network
     hidden = None
-    for i in xrange(FLAGS.seq_length-1):
+    for i in range(FLAGS.seq_length-1):
       if i < FLAGS.seq_start:
         x_1, hidden = network_template(x_dropout[:,i,:,:,:], hidden)
       else:
@@ -99,7 +104,7 @@ def train():
     # this part will be used for generating video
     x_unwrap_g = []
     hidden_g = None
-    for i in xrange(50):
+    for i in range(50):
       if i < FLAGS.seq_start:
         x_1_g, hidden_g = network_template(x_dropout[:,i,:,:,:], hidden_g)
       else:
@@ -137,10 +142,12 @@ def train():
     sess.run(init)
 
     # Summary op
-    graph_def = sess.graph.as_graph_def(add_shapes=True)
-    summary_writer = tf.summary.FileWriter(FLAGS.train_dir, graph_def=graph_def)
+    # graph_def = sess.graph.as_graph_def(add_shapes=True)
+    # refer to https://www.tensorflow.org/api_docs/python/tf/summary/FileWriter, instead of using graph
+    # summary_writer = tf.summary.FileWriter(FLAGS.train_dir, graph_def=graph_def)
+    summary_writer = tf.summary.FileWriter(FLAGS.train_dir, graph=sess.graph)
 
-    for step in xrange(FLAGS.max_step):
+    for step in range(FLAGS.max_step):
       dat = generate_bouncing_ball_sample(FLAGS.batch_size, FLAGS.seq_length, 32, FLAGS.num_balls)
       t = time.time()
       _, loss_r = sess.run([train_op, loss],feed_dict={x:dat, keep_prob:FLAGS.keep_prob})
@@ -168,7 +175,7 @@ def train():
         ims = sess.run([x_unwrap_g],feed_dict={x:dat_gif, keep_prob:FLAGS.keep_prob})
         ims = ims[0][0]
         print(ims.shape)
-        for i in xrange(50 - FLAGS.seq_start):
+        for i in range(50 - FLAGS.seq_start):
           x_1_r = np.uint8(np.maximum(ims[i,:,:,:], 0) * 255)
           new_im = cv2.resize(x_1_r, (180,180))
           video.write(new_im)

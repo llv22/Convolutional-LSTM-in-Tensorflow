@@ -1,0 +1,13 @@
+# local data for : AI Challenge on Meteorology
+data/
+
+# macOS
+.DS_Store
+
+# python cache
+__pycache__/
+.ipynb_checkpoints/
+checkpoints/
+
+# generated video
+*.mov

@@ -24,7 +24,7 @@ tf.app.flags.DEFINE_integer('num_balls', 2,
 
 
 def norm(x): return sqrt((x**2).sum())
-def sigmoid(x):        return 1./(1.+exp(-x))
+def sigmoid(x): return 1./(1.+exp(-x))
 
 
 SIZE=10
@@ -37,10 +37,12 @@ def new_speeds(m1, m2, v1, v2):
 # size of bounding box: SIZE X SIZE.
 
 def bounce_n(T=128, n=2, r=None, m=None):
-    if r==None: r=array([4.0]*n)
-    if m==None: m=array([1]*n)
+    if r is None: 
+        r=array([4.0]*n)
+    if m is None: 
+        m=array([1]*n)
     # r is to be rather small.
-    X=zeros((T, n, 2), dtype='float')
+    X = zeros((T, n, 2), dtype='float')
     V = zeros((T, n, 2), dtype='float')
     v = randn(n,2)
     v = (v / norm(v)*.5)*1.0
@@ -153,7 +155,8 @@ def ar(x,y,z):
 def matricize(X,V,res,r=None):
 
     T, n= shape(X)[0:2]
-    if r==None: r=array([4.0]*n)
+    if r is None: 
+        r=array([4.0]*n)
 
     A=zeros((T,res,res, 3), dtype='float')
     
@@ -171,15 +174,16 @@ def matricize(X,V,res,r=None):
     return A
 
 def bounce_mat(res, n=2, T=128, r =None):
-    if r==None: r=array([1.2]*n)
-    x = bounce_n(T,n,r);
-    A = matricize(x,res,r)
+    if r is None: 
+        r=array([1.2]*n)
+    # python semicolon, refer to https://stackoverflow.com/questions/8236380/why-is-semicolon-allowed-in-this-python-snippet
+    x = bounce_n(T,n,r); A = matricize(x,res,r)
     return A
 
 def bounce_vec(res, n=2, T=128, r =None, m =None):
-    if r==None: r=array([1.2]*n)
-    x,v = bounce_n(T,n,r,m);
-    V = matricize(x,v,res,r)
+    if r is None: 
+        r=array([1.2]*n)
+    x,v = bounce_n(T,n,r,m); V = matricize(x,v,res,r)
     return V
     
 def show_single_V(V):
